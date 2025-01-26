@@ -23,7 +23,7 @@ pub fn create_star_instances() -> Vec<Instance> {
     };
     let mut instances = Vec::new();
     
-    for _ in 0..WgpuState::STAR_INSTANCE_COUNT {
+    for _ in 0..crate::env::STAR_COUNT.parse::<u32>().expect("Failed to parse STAR_COUNT") {
         instances.push(Instance {
             position: [
                 rng.gen_range(-0.9..0.9),

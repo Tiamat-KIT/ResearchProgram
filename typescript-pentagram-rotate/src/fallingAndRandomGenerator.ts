@@ -77,7 +77,7 @@ export default async function complete() {
     const {context,device,format} = await initWgpu();
     const frameStats = new FrameStats();
     // 星の数を定義
-    const NUM_STARS = 1000;
+    const NUM_STARS = Number(process.env.STAR_COUNT) || 1000;
 
     // 星のインスタンスデータを生成
     function createStarInstances() {

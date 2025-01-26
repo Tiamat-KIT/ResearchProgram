@@ -1,0 +1,13 @@
+services:
+  typescript:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ../workspace:/workspace
+      - ../workspace/rust-pentagram/workspace:/workspace/rust
+      - ../workspace/typescript-pentagram-rotate:/workspace/typescript
+    user: utakata
+    tty: true

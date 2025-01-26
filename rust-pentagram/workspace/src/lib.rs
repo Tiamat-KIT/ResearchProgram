@@ -2,6 +2,7 @@ mod state;
 mod instance;
 mod vertex;
 mod uniform;
+mod env;
 
 use state::WgpuState;
 
@@ -25,6 +26,7 @@ fn main() {
 
 #[cfg_attr(all(target_arch = "wasm32", target_os = "unknown"), wasm_bindgen(start))]
 async fn run() {
+    
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "wasm32")] {
             std::panic::set_hook(Box::new(console_error_panic_hook::hook));

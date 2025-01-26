@@ -10,6 +10,8 @@ use web_time::Instant;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+use crate::env;
+
 struct FrameStats {
     min_time: f64,
     max_time: f64,
@@ -96,7 +98,7 @@ pub struct WgpuState<'window> {
 }
 
 impl<'window> WgpuState<'window> {
-    pub const STAR_INSTANCE_COUNT: u32 = 1000;
+
     pub async fn new(window: &'window Window) -> WgpuState<'window> {
         let size = window.inner_size();
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -300,7 +302,7 @@ impl<'window> WgpuState<'window> {
                 render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
                 render_pass.set_vertex_buffer(1, instance_buffer.slice(..));
                 render_pass.set_index_buffer(index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.draw_indexed(0..num_indices, 0, 0..Self::STAR_INSTANCE_COUNT);
+                render_pass.draw_indexed(0..num_indices, 0, 0..env::STAR_COUNT.parse::<u32>().expect("Failed to parse STAR_COUNT"));
             }
             queue.submit(std::iter::once(encoder.finish()));
         }

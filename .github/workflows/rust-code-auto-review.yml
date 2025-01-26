@@ -1,5 +1,5 @@
 name: clippy-action
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   clippy:
     permissions:
@@ -17,4 +17,4 @@ jobs:
         level: warning
         reporter: 'github-pr-review'
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        workdir: "./rust-pentagram"
+        workdir: "./rust-pentagram/workspace"
