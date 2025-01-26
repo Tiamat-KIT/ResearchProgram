@@ -19,7 +19,5 @@
                 "dprint.dprint"
             ]
         }
-    },
-    "containerUser": "utakata",
-    "postCreateCommand": "rustup default stable && cargo install wasmtime-cli",
+    }
 }

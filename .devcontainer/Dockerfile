@@ -13,11 +13,7 @@ ARG GROUP_ID=1100
 
 # ユーザーとグループの作成
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} && \
-    useradd -m -u ${USER_ID} -g ${GROUP_ID} ${USER_NAME}
-
-# デフォルトシェルをbashに設定
-RUN chsh -s /bin/bash ${USER_NAME} \
-    && echo 'export PS1="\e[01;32m\u\e[m:\e[01;34m\w\e[m\$ "' >> /home/${USER_NAME}/.bashrc
+    useradd --create-home --uid ${USER_ID} --gid ${GROUP_ID} --shell /bin/bash ${USER_NAME}
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -26,18 +22,11 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-USER ${USER_NAME}
-
 # Rustのインストール
 COPY --from=rust /usr/local/cargo /usr/local/cargo
 COPY --from=rust /usr/local/rustup /usr/local/rustup
 ENV PATH $PATH:/usr/local/cargo/bin/
 ENV RUSTUP_HOME /usr/local/rustup
-
-# 一般ユーザでも動くようにしとくぞ
-RUN adduser --disabled-password ${USER_NAME}
-ENV USER ${USER_NAME}
-
 
 # Node.jsのインストール
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
@@ -48,9 +37,12 @@ RUN ln -s /usr/local/bin/node /usr/local/bin/nodejs \
     && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npx
 
 RUN rustup target add wasm32-unknown-unknown
+RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-RUN chsh -s /bin/bash ${USER_NAME} \
-    && echo 'export PS1="\e[01;32m\u\e[m:\e[01;34m\w\e[m\$ "' >> /home/${USER_NAME}/.bashrc
-
-SHELL ["/bin/bash", "-c"]
+# コンテナ内の作業ユーザーを設定
+USER ${USER_NAME}
 WORKDIR /workspace
+RUN chown -R ${USER_ID}:${GROUP_ID} /workspace
+
+# 確認用シェル
+SHELL ["/bin/bash", "-c"]

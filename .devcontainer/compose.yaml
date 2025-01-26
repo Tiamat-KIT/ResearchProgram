@@ -6,8 +6,11 @@ services:
     env_file:
       - .env
     volumes:
-      - ../workspace:/workspace
-      - ../workspace/rust-pentagram/workspace:/workspace/rust
-      - ../workspace/typescript-pentagram-rotate:/workspace/typescript
+      - type: bind
+        source: ../rust-pentagram/workspace
+        target: /workspace/rust
+      - type: bind
+        source: ../typescript-pentagram-rotate
+        target: /workspace/typescript
     user: utakata
     tty: true
