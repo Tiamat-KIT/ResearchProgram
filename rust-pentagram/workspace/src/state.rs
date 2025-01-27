@@ -44,7 +44,7 @@ impl FrameStats {
         if self.frame_count == 0 {
             0.0
         } else {
-            self.total_time / self.frame_count as f64
+            (self.total_time / self.frame_count as f64).powi(6).trunc()
         }
     }
 
