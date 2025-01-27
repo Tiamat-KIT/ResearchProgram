@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import complete from "./graphics/typescript/animate"
-import {run} from "./graphics/wasm/rust_pentagram_bg.wasm";
+import {run} from "./graphics/wasm/rust_pentagram";
 
 function App() {
   useEffect(() => {
