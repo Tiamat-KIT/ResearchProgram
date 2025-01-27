@@ -7,10 +7,7 @@ mod env;
 use state::WgpuState;
 
 use winit::{
-    event::*,
-    event_loop::{self, EventLoop},
-    keyboard::{KeyCode, PhysicalKey},
-    window::{self, WindowBuilder}
+    event::*, event_loop::{self, EventLoop}, keyboard::{KeyCode, PhysicalKey}, platform::web::EventLoopExtWebSys, window::{self, WindowBuilder}
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -37,27 +34,20 @@ async fn run() {
         }
     }
 
-    cfg_if::cfg_if! {
-        if #[cfg(target_arch = "wasm32")] {
-            use winit::platform::web::EventLoopExtWebSys;
-            let event_loop = EventLoop::new().expect("Event Loop Error");
-            let window = WindowBuilder::new()
-                .with_title("Pentagrams WebAssembly")
-                .build(&event_loop)
-                .unwrap();
-        } else {
-            let event_loop = EventLoop::new().expect("Event Loop Error");
-            let window = WindowBuilder::new()
-                .with_title("Pentagrams Native Window")
-                .build(&event_loop)
-                .unwrap();
-        }
-    }
+    let event_loop = EventLoop::new().expect("Event Loop Error");
 
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "wasm32")] {
             use winit::dpi::PhysicalSize;
-            use winit::platform::web::WindowExtWebSys;
+            use winit::platform::web::{
+                WindowExtWebSys,
+            };
+
+            let window = WindowBuilder::new()
+                .with_title("Pentagrams WebAssembly")
+                .build(&event_loop)
+                .unwrap();
+            
             web_sys::window()
                 .and_then(|win| win.document())
                 .and_then(|doc| {
@@ -70,61 +60,124 @@ async fn run() {
                 .expect("Couldn't append canvas to document body.");
 
             let _ = window.request_inner_size(PhysicalSize::new(800, 800));
+        } else {
+            let window = WindowBuilder::new()
+                .with_title("Pentagrams Native Window")
+                .build(&event_loop)
+                .unwrap();
         }
     }
 
     let mut state = WgpuState::new(&window).await;
     let mut surface_configured = false;
 
-    event_loop
-        .run(move |event, control_flow| {
-            match event {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == state.window.id() => {
-                    if !state.input(event) {
-                        match event {
-                            WindowEvent::CloseRequested
-                            | WindowEvent::KeyboardInput {
-                                event: KeyEvent {
-                                    state: ElementState::Pressed,
-                                    physical_key: PhysicalKey::Code(KeyCode::Escape),
-                                    ..
-                                },
-                                ..
-                            } => control_flow.exit(),
-                            WindowEvent::Resized(physical_size) => {
-                                log::info!("physical_size: {physical_size:?}");
-                                surface_configured = true;
-                                state.resize(*physical_size);
-                            }
-                            WindowEvent::RedrawRequested => {
-                                state.window.request_redraw();
-
-                                if (!surface_configured) {
-                                    return;
-                                }
-
-                                state.update();
-                                match state.render() {
-                                    Ok(_) => {}
-                                    Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(state.size),
-                                    Err(wgpu::SurfaceError::OutOfMemory) => {
-                                        log::error!("OutOfMemory");
-                                        control_flow.exit();
+    cfg_if::cfg_if! {
+        if #[cfg(target_arch = "wasm32")] {
+            use winit::platform::web::EventLoopExtWebSys;
+            event_loop.spawn(
+                move |event,control_flow| {
+                    match event {
+                        Event::WindowEvent {
+                            ref event,
+                            window_id,
+                        } if window_id == state.window.id() => {
+                            if !state.input(event) {
+                                match event {
+                                    WindowEvent::CloseRequested
+                                    | WindowEvent::KeyboardInput {
+                                        event: KeyEvent {
+                                            state: ElementState::Pressed,
+                                            physical_key: PhysicalKey::Code(KeyCode::Escape),
+                                            ..
+                                        },
+                                        ..
+                                    } => control_flow.exit(),
+                                    WindowEvent::Resized(physical_size) => {
+                                        log::info!("physical_size: {physical_size:?}");
+                                        surface_configured = true;
+                                        state.resize(*physical_size);
                                     }
-                                    Err(wgpu::SurfaceError::Timeout) => {
-                                        log::warn!("Surface timeout")
+                                    WindowEvent::RedrawRequested => {
+                                        state.window.request_redraw();
+    
+                                        if (!surface_configured) {
+                                            return;
+                                        }
+    
+                                        state.update();
+                                        match state.render() {
+                                            Ok(_) => {}
+                                            Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(state.size),
+                                            Err(wgpu::SurfaceError::OutOfMemory) => {
+                                                log::error!("OutOfMemory");
+                                                control_flow.exit();
+                                            }
+                                            Err(wgpu::SurfaceError::Timeout) => {
+                                                log::warn!("Surface timeout")
+                                            }
+                                        }
                                     }
+                                    _ => {}
                                 }
                             }
-                            _ => {}
                         }
+                        _ => {}
                     }
                 }
-                _ => {}
-            }
-        })
-        .unwrap();
+            )
+        } else {
+            event_loop
+            .run(move |event, control_flow| {
+                match event {
+                    Event::WindowEvent {
+                        ref event,
+                        window_id,
+                    } if window_id == state.window.id() => {
+                        if !state.input(event) {
+                            match event {
+                                WindowEvent::CloseRequested
+                                | WindowEvent::KeyboardInput {
+                                    event: KeyEvent {
+                                        state: ElementState::Pressed,
+                                        physical_key: PhysicalKey::Code(KeyCode::Escape),
+                                        ..
+                                    },
+                                    ..
+                                } => control_flow.exit(),
+                                WindowEvent::Resized(physical_size) => {
+                                    log::info!("physical_size: {physical_size:?}");
+                                    surface_configured = true;
+                                    state.resize(*physical_size);
+                                }
+                                WindowEvent::RedrawRequested => {
+                                    state.window.request_redraw();
+
+                                    if (!surface_configured) {
+                                        return;
+                                    }
+
+                                    state.update();
+                                    match state.render() {
+                                        Ok(_) => {}
+                                        Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(state.size),
+                                        Err(wgpu::SurfaceError::OutOfMemory) => {
+                                            log::error!("OutOfMemory");
+                                            control_flow.exit();
+                                        }
+                                        Err(wgpu::SurfaceError::Timeout) => {
+                                            log::warn!("Surface timeout")
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            })
+            .unwrap();
+        }
+    }
+
 }
