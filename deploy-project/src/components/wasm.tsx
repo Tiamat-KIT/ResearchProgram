@@ -15,7 +15,7 @@ function Wasm_View() {
         // WebAssemblyの初期化
         init().then((wasm) => {
             console.log("Wasm initialized")
-            wasm.__wbindgen_start()
+            wasm.run()
         })
 
         // コンポーネントがアンマウントされた時にstatsElを削除
