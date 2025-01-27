@@ -1,29 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect,useState } from 'react'
 import complete from "./graphics/typescript/animate"
 import init from "./graphics/wasm/pkg";
 
 function App() {
+  const [toggle,setToggle] = useState(false)
   useEffect(() => {
-    (async () => {
-      await complete();
-      (await init()).run()
-    })()
-  }, [])
+    if (toggle) {
+      init().then((wasm) => {
+        wasm.run();
+      });
+    } else {
+      complete();
+    }
+  }, [toggle])
 
   return (
     <main>
-      <section id="container">
+      {toggle ? <section id="container">
         {/**WebAssemblyが描画する対象 */}
         <div id="stats" />
-      </section>
+      </section> : 
       <section>
         {/**Reactが描画する対象 */}
         <div id="stas-ts" />
         <canvas id="ts-canvas" />
-      </section>
-
+      </section>}
+      <button onClick={() => setToggle(!toggle)}>
+        Toggle change to `${toggle ? "React" : "WebAssembly"}`
+      </button> 
     </main>
   )
 }
 
 export default App
+
