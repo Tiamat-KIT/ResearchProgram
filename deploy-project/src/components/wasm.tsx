@@ -3,11 +3,31 @@ import init from "../graphics/wasm/pkg/rust_pentagram";
 
 function Wasm_View() {
     useEffect(() => {
-        if(document.getElementById("stats") !== null) {
+        const targetSelector = "#stats"
+        const observerCallback = (mutationsList: MutationRecord[], _observer: MutationObserver) => {
+            for(const mutation of mutationsList) {
+                if(mutation.type === "childList") {
+                    const targetEl = document.querySelector(targetSelector)
+                    if(targetEl) {
+                        init().then(() => {
+                            console.log("Wasm initialized")
+                        })
+                    }
+                }
+            }
+        }
+
+        const observer = new MutationObserver(observerCallback)
+        observer.observe(document.body, {childList: true, subtree: true})
+
+        const initialCheck = document.querySelector(targetSelector)
+        if(initialCheck) {
             init().then(() => {
                 console.log("Wasm initialized")
             })
-        }
+        }   
+
+        return () => observer.disconnect()
     }, [])
 
     return (
