@@ -12,7 +12,7 @@ function Wasm_View() {
         <main>
             <section id="container">
                 {/**WebAssemblyが描画する対象 */}
-                <div id="stats" ref={statsRef}>
+                <div id="stats" ref={statsRef} />
             </section>
         </main>
     )
