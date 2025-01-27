@@ -1,5 +1,7 @@
 async function initWgpu() {
     const canvas = document.getElementById("ts-canvas") as HTMLCanvasElement
+    canvas.width = 550
+    canvas.height = 550
     if (!canvas) throw new Error()
     let adapter = await navigator.gpu.requestAdapter()
     if (!adapter) throw new Error()
@@ -52,7 +54,7 @@ class FrameStats {
 
     displayStats() {
         const statsElement = document.getElementById("stats-ts");
-        const formatNumber = (num: number) => num.toFixed(15);
+        const formatNumber = (num: number) => num.toFixed(6);
         if (statsElement) {
             statsElement.innerHTML = `
                 <table>
@@ -77,7 +79,7 @@ export default async function complete() {
     const { context, device, format } = await initWgpu();
     const frameStats = new FrameStats();
     // 星の数を定義
-    const NUM_STARS = Number(process.env.STAR_COUNT) || 1000;
+    const NUM_STARS = 1000;
 
     // 星のインスタンスデータを生成
     function createStarInstances() {

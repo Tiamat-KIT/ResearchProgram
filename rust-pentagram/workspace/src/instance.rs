@@ -26,14 +26,14 @@ pub fn create_star_instances() -> Vec<Instance> {
     for _ in 0..crate::env::STAR_COUNT.parse::<u32>().expect("Failed to parse STAR_COUNT") {
         instances.push(Instance {
             position: [
-                rng.gen_range(-0.9..0.9),
-                rng.gen_range(-0.9..0.9),
+                rng.gen_range(-1.0..1.0),
+                rng.gen_range(-1.0..1.0),
             ],
-            scale: rng.gen_range(0.02..0.05),  // スケールを少し大きく
+            scale: rng.gen_range(0.02..0.08),  // スケールを少し大きく
             initial_rotation: rng.gen_range(0.0..std::f32::consts::PI * 2.0),
             speed: [
-                rng.gen_range(-0.3..0.3),      // 移動速度を調整
-                rng.gen_range(-0.3..0.3),
+                rng.gen_range(-0.5..0.5),      // 移動速度を調整
+                rng.gen_range(-0.5..0.5),
             ],
             rotation_speed: rng.gen_range(0.5..2.0),  // 回転速度を調整
         });
