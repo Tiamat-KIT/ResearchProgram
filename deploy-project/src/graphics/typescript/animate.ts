@@ -54,7 +54,7 @@ class FrameStats {
 
     displayStats() {
         const statsElement = document.getElementById("stats-ts");
-        const formatNumber = (num: number) => num.toFixed(5);
+        const formatNumber = (num: number) => num.toFixed(6);
         if (statsElement) {
             statsElement.innerHTML = `
                 <table>
