@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import complete from "./graphics/typescript/animate"
-import init from "./graphics/wasm/pkg";
+import init,{run} from "./graphics/wasm/pkg";
 
 function App() {
   useEffect(() => {
