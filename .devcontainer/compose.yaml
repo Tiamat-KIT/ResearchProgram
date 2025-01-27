@@ -12,5 +12,10 @@ services:
       - type: bind
         source: ../typescript-pentagram-rotate
         target: /workspace/typescript
+      - type: bind
+        source: ../deploy-project
+        target: /workspace/deploy
+    ports:
+      - "5173:5173"
     user: utakata
     tty: true

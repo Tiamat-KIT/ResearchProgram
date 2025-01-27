@@ -19,5 +19,6 @@
                 "dprint.dprint"
             ]
         }
-    }
+    },
+    "forwardPorts": [5173]
 }
