@@ -13,8 +13,9 @@ function Wasm_View() {
         containerEl?.appendChild(statsEl)
 
         // WebAssemblyの初期化
-        init().then(() => {
+        init().then((wasm) => {
             console.log("Wasm initialized")
+            wasm.__wbindgen_start()
         })
 
         // コンポーネントがアンマウントされた時にstatsElを削除
@@ -22,6 +23,7 @@ function Wasm_View() {
             containerEl?.removeChild(statsEl)
         }
     }, [])
+
     return (
         <main>
             <section id="container">
