@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import init from "../graphics/wasm/pkg/rust_pentagram";
 // import { useInView } from '../hooks/useInView';
 
@@ -13,13 +13,20 @@ function Wasm_View() {
         containerEl?.appendChild(statsEl)
 
         // WebAssemblyの初期化
-        init().then(() => {
+        init().then((wasm) => {
             console.log("Wasm initialized")
+            wasm.__wbindgen_start()
         })
 
         // コンポーネントがアンマウントされた時にstatsElを削除
         return () => {
             containerEl?.removeChild(statsEl)
+        }
+    }, [])
+
+    useEffect(() => {
+        return () => {
+
         }
     }, [])
     return (
