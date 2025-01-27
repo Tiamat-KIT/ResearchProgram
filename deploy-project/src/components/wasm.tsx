@@ -3,9 +3,11 @@ import init from "../graphics/wasm/pkg/rust_pentagram";
 
 function Wasm_View() {
     useEffect(() => {
-        init().then(() => {
-            console.log("Wasm initialized")
-        })
+        if(document.getElementById("stats") !== null) {
+            init().then(() => {
+                console.log("Wasm initialized")
+            })
+        }
     }, [])
 
     return (
