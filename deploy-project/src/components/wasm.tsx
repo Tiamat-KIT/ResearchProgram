@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import init from "../graphics/wasm/pkg/rust_pentagram";
 // import { useInView } from '../hooks/useInView';
 
@@ -24,11 +24,6 @@ function Wasm_View() {
         }
     }, [])
 
-    useEffect(() => {
-        return () => {
-
-        }
-    }, [])
     return (
         <main>
             <section id="container">
