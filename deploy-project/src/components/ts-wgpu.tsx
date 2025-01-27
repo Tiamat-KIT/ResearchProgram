@@ -4,7 +4,7 @@ import complete from "../graphics/typescript/animate"
 function Ts_View() {
     useEffect(() => {
         const targetSelector = "#stats-ts"
-        const observerCallback = (mutationsList: MutationRecord[], observer: MutationObserver) => {
+        const observerCallback = (mutationsList: MutationRecord[], _observer: MutationObserver) => {
             for(const mutation of mutationsList) {
                 if(mutation.type === "childList") {
                     const targetEl = document.querySelector(targetSelector)
