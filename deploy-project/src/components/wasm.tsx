@@ -1,10 +1,10 @@
-import { useEffect,useState } from 'react'
+import { useEffect } from 'react'
 import init from "../graphics/wasm/pkg/rust_pentagram";
 
 function Wasm_View() {
     useEffect(() => {
         const targetSelector = "#stats"
-        const observerCallback = (mutationsList: MutationRecord[], observer: MutationObserver) => {
+        const observerCallback = (mutationsList: MutationRecord[], _observer: MutationObserver) => {
             for(const mutation of mutationsList) {
                 if(mutation.type === "childList") {
                     const targetEl = document.querySelector(targetSelector)
