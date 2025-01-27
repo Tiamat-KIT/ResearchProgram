@@ -1,22 +1,18 @@
-import { useEffect } from 'react'
+import { useRef } from 'react'
 import init from "../graphics/wasm/pkg/rust_pentagram";
+import { useInView } from '../hooks/useInView';
 
 function Wasm_View() {
-    useEffect(() => {
-        const targetSelector = "#stats"
-        const initialCheck = document.querySelector(targetSelector)
-        if(initialCheck) {
-            init().then(() => {
-                console.log("Wasm initialized")
-            })
-        }   
-    }, [])
-
+    const statsRef = useRef<HTMLDivElement>(null)
+    let exist = useInView(statsRef)
+    if(exist) {
+        init()
+    }
     return (
         <main>
             <section id="container">
                 {/**WebAssemblyが描画する対象 */}
-                <div id="stats" />
+                <div id="stats" ref={statsRef}>
             </section>
         </main>
     )
