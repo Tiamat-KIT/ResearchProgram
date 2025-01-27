@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react'
-import init from "../graphics/wasm/pkg/rust_pentagram";
+import init from "../graphics/wasm/rust_pentagram";
 // import { useInView } from '../hooks/useInView';
 
 function Wasm_View() {
