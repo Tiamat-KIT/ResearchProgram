@@ -4,6 +4,8 @@ mod vertex;
 mod uniform;
 mod env;
 
+use std::result;
+
 use state::WgpuState;
 
 use winit::{
@@ -19,6 +21,19 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 fn main() {
     pollster::block_on(run());  
+}
+
+#[cfg(target_arch = "wasm32")]
+fn result_stats_exists() -> bool {
+    let window = web_sys::window().unwrap().document().unwrap();
+    let result_stats = window.get_element_by_id("stats");
+    let result_stats = match result_stats {
+        Some(result_stats) => true,
+        None => {
+            return false;
+        }
+    };
+    result_stats
 }
 
 #[cfg_attr(all(target_arch = "wasm32", target_os = "unknown"), wasm_bindgen(start))]
@@ -107,14 +122,18 @@ async fn run() {
                             if !state.input(event) {
                                 match event {
                                     WindowEvent::CloseRequested
-                                    | WindowEvent::KeyboardInput {
+                                    | WindowEvent::KeyboardInput{
                                         event: KeyEvent {
                                             state: ElementState::Pressed,
                                             physical_key: PhysicalKey::Code(KeyCode::Escape),
                                             ..
                                         },
                                         ..
-                                    } => control_flow.exit(),
+                                    } => {
+                                        if(result_stats_exists()) {
+                                            control_flow.exit()
+                                        }
+                                    },
                                     WindowEvent::Resized(physical_size) => {
                                         log::info!("physical_size: {physical_size:?}");
                                         surface_configured = true;
