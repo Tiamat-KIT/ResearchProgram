@@ -54,21 +54,25 @@ async fn run() {
         Err(err) => {
             match err {
                 winit::error::EventLoopError::NotSupported(not_supported_error) => {
-                    log::error!("Not supported: {:#}",not_supported_error);
+                    log::error!("NotSupported: {not_supported_error}");
                     std::process::exit(1);
                 },
                 winit::error::EventLoopError::Os(os_error) => {
-                    log::error!("OS error: {:#}",os_error);
+                    log::error!("Os: {os_error}");
+                    std::process::exit(1);
+                },
+                winit::error::EventLoopError::AlreadyRunning => {
+                    log::error!("AlreadyRunning");
+                    std::process::exit(1);
+                },
+                winit::error::EventLoopError::RecreationAttempt => {
+                    log::error!("RecreationAttempt");
                     std::process::exit(1);
                 },
                 winit::error::EventLoopError::ExitFailure(_) => {
-                    log::error!("Exit failure");
+                    log::error!("ExitFailure");
                     std::process::exit(1);
                 },
-                _ => {
-                    log::error!("Unknown error");
-                    std::process::exit(1);
-                }
             }
         }
     };
@@ -130,9 +134,7 @@ async fn run() {
                                         },
                                         ..
                                     } => {
-                                        if(result_stats_exists()) {
-                                            control_flow.exit()
-                                        }
+                                        control_flow.exit()
                                     },
                                     WindowEvent::Resized(physical_size) => {
                                         log::info!("physical_size: {physical_size:?}");
@@ -144,6 +146,10 @@ async fn run() {
     
                                         if (!surface_configured) {
                                             return;
+                                        }
+
+                                        if(!result_stats_exists()) {
+                                            control_flow.exit();
                                         }
     
                                         state.update();
@@ -198,6 +204,10 @@ async fn run() {
                                         return;
                                     }
 
+                                    if(!result_stats_exists()) {
+                                        control_flow.exit();
+                                    }
+                                    
                                     state.update();
                                     match state.render() {
                                         Ok(_) => {}
