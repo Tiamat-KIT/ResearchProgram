@@ -18,7 +18,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 fn main() {
-    pollster::block_on(run());
+    pollster::block_on(run());  
 }
 
 #[cfg_attr(all(target_arch = "wasm32", target_os = "unknown"), wasm_bindgen(start))]
@@ -34,7 +34,30 @@ async fn run() {
         }
     }
 
-    let event_loop = EventLoop::new().expect("Event Loop Error");
+    let event_loop = match EventLoop::new() {
+        Ok(event_loop) => event_loop,
+        Err(err) => {
+            match err {
+                winit::error::EventLoopError::NotSupported(not_supported_error) => {
+                    log::error!("Not supported: {:#}",not_supported_error);
+                    std::process::exit(1);
+                },
+                winit::error::EventLoopError::Os(os_error) => {
+                    log::error!("OS error: {:#}",os_error);
+                    std::process::exit(1);
+                },
+                winit::error::EventLoopError::ExitFailure(_) => {
+                    log::error!("Exit failure");
+                    std::process::exit(1);
+                },
+                _ => {
+                    log::error!("Unknown error");
+                    std::process::exit(1);
+                }
+            }
+        }
+    };
+    
     let window = {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
