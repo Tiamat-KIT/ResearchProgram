@@ -77,9 +77,9 @@ impl FrameStats {
     }
 }
 
-pub struct WgpuState<'window> {
+pub struct WgpuState {
     pub instance: wgpu::Instance,
-    pub surface: wgpu::Surface<'window>,
+    pub surface: wgpu::Surface<'static>,
     pub device: Option<wgpu::Device>,
     pub queue: Option<wgpu::Queue>,
     pub config: Option<wgpu::SurfaceConfiguration>,
@@ -94,12 +94,11 @@ pub struct WgpuState<'window> {
     pub instance_buffer: Option<wgpu::Buffer>,
     pub start_time: Option<Instant>,
     pub frame_stats: FrameStats,
-    pub window: &'window Window,
+    pub window: Window,
 }
 
-impl<'window> WgpuState<'window> {
-
-    pub async fn new(window: &'window Window) -> WgpuState<'window> {
+impl WgpuState {
+    pub async fn new(window: Window) -> WgpuState {
         let size = window.inner_size();
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             #[cfg(target_arch = "wasm32")]
@@ -108,7 +107,11 @@ impl<'window> WgpuState<'window> {
             backends: wgpu::Backends::PRIMARY,
             ..Default::default()
         });
-        let surface = instance.create_surface(window).unwrap();
+        let surface = unsafe{
+            instance.create_surface_unsafe(
+                wgpu::SurfaceTargetUnsafe::from_window(&window).unwrap()
+            ).unwrap()
+        };
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -212,7 +215,7 @@ impl<'window> WgpuState<'window> {
         }
     }
 
-    pub fn native_new(window: &'window Window) -> WgpuState<'window> {
+    pub fn native_new(window: Window) -> WgpuState {
         pollster::block_on(Self::new(window))
     }
 

@@ -35,40 +35,40 @@ async fn run() {
     }
 
     let event_loop = EventLoop::new().expect("Event Loop Error");
+    let window = {
+        cfg_if::cfg_if! {
+            if #[cfg(target_arch = "wasm32")] {
+                use winit::dpi::PhysicalSize;
+                use winit::platform::web::{
+                    WindowExtWebSys,
+                };
 
-    cfg_if::cfg_if! {
-        if #[cfg(target_arch = "wasm32")] {
-            use winit::dpi::PhysicalSize;
-            use winit::platform::web::{
-                WindowExtWebSys,
-            };
+                let window = WindowBuilder::new().build(&event_loop).unwrap();
+                window.set_title("Pentagrams Web Window");
+                
+                web_sys::window()
+                    .and_then(|win| win.document())
+                    .and_then(|doc| {
+                        let dst = doc.get_element_by_id("container")?;
+                        let window_canvas = window.canvas().unwrap();
+                        let canvas = web_sys::Element::from(window_canvas);
+                        dst.append_child(&canvas).ok()?;
+                        Some(())
+                    })
+                    .expect("Couldn't append canvas to document body.");
 
-            let window = WindowBuilder::new()
-                .with_title("Pentagrams WebAssembly")
-                .build(&event_loop)
-                .unwrap();
-            
-            web_sys::window()
-                .and_then(|win| win.document())
-                .and_then(|doc| {
-                    let dst = doc.get_element_by_id("container")?;
-                    let window_canvas = window.canvas().unwrap();
-                    let canvas = web_sys::Element::from(window_canvas);
-                    dst.append_child(&canvas).ok()?;
-                    Some(())
-                })
-                .expect("Couldn't append canvas to document body.");
-
-            let _ = window.request_inner_size(PhysicalSize::new(800, 800));
-        } else {
-            let window = WindowBuilder::new()
-                .with_title("Pentagrams Native Window")
-                .build(&event_loop)
-                .unwrap();
+                let _ = window.request_inner_size(PhysicalSize::new(800, 800));
+                window
+            } else {
+                WindowBuilder::new()
+                    .with_title("Pentagrams Native Window")
+                    .build(&event_loop)
+                    .unwrap()
+            }
         }
-    }
+    };
 
-    let mut state = WgpuState::new(&window).await;
+    let mut state = WgpuState::new(window).await;
     let mut surface_configured = false;
 
     cfg_if::cfg_if! {

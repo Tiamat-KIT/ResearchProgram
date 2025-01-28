@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:wasm && npm run build:js",
-    "build:js": "tsc && vite build",
-    "build:wasm": "cd wasm && wasm-pack build --target web --out-dir ../src/graphics/wasm"
+    "build": "tsc && vite build"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.97.23",

@@ -1,5 +1,3 @@
-use crate::state::WgpuState;
-
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Instance {
