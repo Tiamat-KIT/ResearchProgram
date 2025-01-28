@@ -58,6 +58,13 @@ impl FrameStats {
                 print!("----------------------------------\n");
             } else {
                 let document = web_sys::window().unwrap().document().unwrap();
+                /* let stats_element = document
+                    .create_element("div")
+                    .unwrap()
+                    .dyn_into::<web_sys::HtmlDivElement>()
+                    .unwrap();
+                stats_element.set_id("stats");
+                document.body().unwrap().append_child(&stats_element).unwrap(); */
                 let stats_element = document.get_element_by_id("stats").unwrap();
                 stats_element.set_inner_html(&format!(
                     "<table>
