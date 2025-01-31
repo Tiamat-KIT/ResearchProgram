@@ -65,7 +65,6 @@ class FrameStats {
                     <tr><td>Total Frames</td><td>${this.frameCount}</td></tr>
                 </table>
             `;
-        } else {
             console.log(`Min Time: ${formatNumber(this.minTime)} sec`);
             console.log(`Max Time: ${formatNumber(this.maxTime)} sec`);
             console.log(`Average Time: ${formatNumber(this.averageTime())} sec`);

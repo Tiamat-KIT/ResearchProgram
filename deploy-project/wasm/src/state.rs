@@ -10,26 +10,37 @@ use web_time::Instant;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
+
 use crate::env;
 
-struct FrameStats {
+#[wasm_bindgen]
+pub struct FrameStats {
     min_time: f64,
     max_time: f64,
     total_time: f64,
     frame_count: u64,
+    frame_times: Vec<f64>,
 }
 
+#[wasm_bindgen]
 impl FrameStats {
-    fn new() -> Self {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
         Self {
             min_time: f64::MAX,
             max_time: 0.0,
             total_time: 0.0,
             frame_count: 0,
+            frame_times: Vec::new(),
         }
     }
 
-    fn update(&mut self, frame_time: f64) {
+    pub fn update(&mut self, frame_time: f64) {
         if frame_time < self.min_time {
             self.min_time = frame_time;
         }
@@ -38,49 +49,67 @@ impl FrameStats {
         }
         self.total_time += frame_time;
         self.frame_count += 1;
+        self.frame_times.push(frame_time);
     }
 
-    fn average_time(&self) -> f64 {
+    pub fn average_time(&self) -> f64 {
         if self.frame_count == 0 {
             0.0
         } else {
-            (self.total_time / self.frame_count as f64).powi(7).trunc()
+            self.total_time / self.frame_count as f64
         }
     }
 
-    fn display_stats(&self) {
-        cfg_if::cfg_if! {
-            if #[cfg(not(target_arch = "wasm32"))] {
-                println!("Min Time: {} sec", self.min_time);
-                println!("Max Time: {} sec", self.max_time);
-                println!("Average Time: {} sec", self.average_time());
-                println!("Total Frames: {}", self.frame_count);
-                print!("----------------------------------\n");
-            } else {
-                let document = web_sys::window().unwrap().document().unwrap();
-                /* let stats_element = document
-                    .create_element("div")
-                    .unwrap()
-                    .dyn_into::<web_sys::HtmlDivElement>()
-                    .unwrap();
-                stats_element.set_id("stats");
-                document.body().unwrap().append_child(&stats_element).unwrap(); */
-                let stats_element = document.get_element_by_id("stats").unwrap();
-                stats_element.set_inner_html(&format!(
-                    "<table>
-                        <tr><th>Metric</th><th>Value</th></tr>
-                        <tr><td>Min Time</td><td>{} sec</td></tr>
-                        <tr><td>Max Time</td><td>{} sec</td></tr>
-                        <tr><td>Average Time</td><td>{} sec</td></tr>
-                        <tr><td>Total Frames</td><td>{}</td></tr>
-                    </table>",
-                    self.min_time,
-                    self.max_time,
-                    self.average_time(),
-                    self.frame_count
-                ));
+    pub fn render_to_canvas(&self, canvas_id: &str) {
+        let document = window().unwrap().document().unwrap();
+        let canvas = document.get_element_by_id(canvas_id).unwrap();
+        let canvas: HtmlCanvasElement = canvas.dyn_into::<HtmlCanvasElement>().unwrap();
+        let context = canvas.get_context("2d").unwrap().unwrap();
+        let context = context.dyn_into::<CanvasRenderingContext2d>().unwrap();
+
+        let width = canvas.width() as f64;
+        let height = canvas.height() as f64;
+        context.clear_rect(0.0, 0.0, width, height);
+
+        // 軸の描画
+        context.set_stroke_style(&"black".into());
+        context.begin_path();
+        context.move_to(0.0, height);
+        context.line_to(width, height);
+        context.stroke();
+
+        // フレーム時間データを折れ線グラフとして描画
+        context.set_stroke_style(&"red".into());
+        context.begin_path();
+
+        if !self.frame_times.is_empty() {
+            let max_time = self.max_time.max(16.0); // 最大 16ms（60FPS）でスケール
+            let scale_x = width / self.frame_times.len() as f64;
+            let scale_y = height / max_time;
+
+            context.move_to(0.0, height - self.frame_times[0] * scale_y);
+            for (i, &t) in self.frame_times.iter().enumerate() {
+                let x = i as f64 * scale_x;
+                let y = height - t * scale_y;
+                context.line_to(x, y);
             }
         }
+        context.stroke();
+    }
+
+    pub fn download_canvas_as_image(canvas_id: &str, filename: &str) {
+        let document = window().unwrap().document().unwrap();
+        let canvas = document.get_element_by_id(canvas_id).unwrap();
+        let canvas: HtmlCanvasElement = canvas.dyn_into::<HtmlCanvasElement>().unwrap();
+
+        let url = canvas.to_data_url().unwrap();
+        let link = document.create_element("a").unwrap();
+        link.set_attribute("href", &url).unwrap();
+        link.set_attribute("download", filename).unwrap();
+        
+        let event = document.create_event("MouseEvents").unwrap();
+        event.init_event("click");
+        link.dispatch_event(&event).unwrap();
     }
 }
 
@@ -264,7 +293,7 @@ impl WgpuState {
         let render_before_time = Instant::now();
         let output = self.surface.get_current_texture().unwrap();
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
+    
         let now = Instant::now();
         let time = now.duration_since(self.start_time.clone().unwrap()).as_secs_f32();
         if let (
@@ -290,7 +319,7 @@ impl WgpuState {
         ) {
             queue.write_buffer(uniform_buffer, 0, bytemuck::cast_slice(&[crate::uniform::Uniforms::new(time)]));
             let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
+    
             {
                 let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
@@ -306,7 +335,7 @@ impl WgpuState {
                     timestamp_writes: None,
                     occlusion_query_set: None,
                 });
-
+    
                 render_pass.set_pipeline(render_pipeline);
                 render_pass.set_bind_group(0, uniform_bind_group, &[]);
                 render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
@@ -316,14 +345,17 @@ impl WgpuState {
             }
             queue.submit(std::iter::once(encoder.finish()));
         }
-
+    
         output.present();
         let render_after_time = Instant::now();
         let render_time = render_after_time.duration_since(render_before_time).as_secs_f64();
         self.frame_stats.update(render_time);
+    
         if self.frame_stats.frame_count % 60 == 0 {
-            self.frame_stats.display_stats();
+            self.frame_stats.render_to_canvas("frameStatsCanvas");
         }
+        
         Ok(())
     }
+    
 }
