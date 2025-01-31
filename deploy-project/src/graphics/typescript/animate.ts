@@ -294,6 +294,7 @@ export default async function complete() {
     const startTime = performance.now();
 
     const frameTimes:Array<number> = [];
+    const MAX_RECORDS = 1000;
 
     function saveToLocalStorage() {
         localStorage.setItem("frameTimes", JSON.stringify(frameTimes));
@@ -310,6 +311,8 @@ export default async function complete() {
     }
 
     function render() {
+        if (frameTimes.length >= MAX_RECORDS) return;
+
         const renderBeforeTime = performance.now();
         const time = (performance.now() - startTime) / 1000;
         device.queue.writeBuffer(uniformBuffer, 0, new Float32Array([time]));
@@ -354,5 +357,6 @@ export default async function complete() {
     document.body.appendChild(saveButton);
 
     render();
+
 
 }
