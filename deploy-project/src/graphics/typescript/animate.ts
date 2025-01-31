@@ -293,7 +293,22 @@ export default async function complete() {
     // 開始時間の記録
     const startTime = performance.now();
 
-    // レンダリングループ
+    const frameTimes:Array<number> = [];
+
+    function saveToLocalStorage() {
+        localStorage.setItem("frameTimes", JSON.stringify(frameTimes));
+    }
+
+    function saveFrameTimesAsCSV() {
+        const csvContent = "data:text/csv;charset=utf-8," + frameTimes.join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "frame_times.csv");
+        document.body.appendChild(link);
+        link.click();
+    }
+
     function render() {
         const renderBeforeTime = performance.now();
         const time = (performance.now() - startTime) / 1000;
@@ -321,13 +336,23 @@ export default async function complete() {
 
         const renderAfterTime = performance.now();
         const renderTime = (renderAfterTime - renderBeforeTime) / 1000;
+        frameTimes.push(renderTime);
         frameStats.update(renderTime);
+
         if (frameStats.frameCount % 60 === 0) {
             frameStats.displayStats();
+            saveToLocalStorage(); // LocalStorage に保存
         }
 
         requestAnimationFrame(render);
     }
 
+    // データをダウンロードするボタンを追加
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "保存 (CSV)";
+    saveButton.onclick = saveFrameTimesAsCSV;
+    document.body.appendChild(saveButton);
+
     render();
+
 }
