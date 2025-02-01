@@ -6,8 +6,7 @@ export class FrameStats {
   constructor();
   update(frame_time: number): void;
   average_time(): number;
-  render_to_canvas(canvas_id: string): void;
-  static download_canvas_as_image(canvas_id: string, filename: string): void;
+  get_saved_frame_times(): Float64Array;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -18,20 +17,22 @@ export interface InitOutput {
   readonly framestats_new: () => number;
   readonly framestats_update: (a: number, b: number) => void;
   readonly framestats_average_time: (a: number) => number;
-  readonly framestats_render_to_canvas: (a: number, b: number, c: number) => void;
-  readonly framestats_download_canvas_as_image: (a: number, b: number, c: number, d: number) => void;
+  readonly framestats_get_saved_frame_times: (a: number, b: number) => void;
   readonly run: () => void;
-  readonly __wbindgen_export_0: (a: number) => void;
-  readonly __wbindgen_export_1: (a: number, b: number) => number;
-  readonly __wbindgen_export_2: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export_3: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __wbindgen_export_0: () => number;
+  readonly __wbindgen_export_1: WebAssembly.Table;
+  readonly __wbindgen_export_2: (a: number) => void;
+  readonly __wbindgen_export_3: (a: number, b: number) => number;
+  readonly __wbindgen_export_4: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_5: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_6: (a: number, b: number, c: number, d: number) => void;
-  readonly __wbindgen_export_7: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_8: (a: number, b: number) => void;
-  readonly __wbindgen_export_9: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_10: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export_6: WebAssembly.Table;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly closure6_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure4_externref_shim: (a: number, b: number, c: any, d: any) => void;
+  readonly closure204_externref_shim: (a: number, b: number, c: any) => void;
+  readonly __wbindgen_export_10: (a: number, b: number) => void;
+  readonly closure290_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure592_externref_shim: (a: number, b: number, c: any) => void;
   readonly __wbindgen_start: () => void;
 }
 

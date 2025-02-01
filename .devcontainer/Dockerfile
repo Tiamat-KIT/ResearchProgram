@@ -36,7 +36,10 @@ RUN ln -s /usr/local/bin/node /usr/local/bin/nodejs \
     && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npx
 
-RUN rustup target add wasm32-unknown-unknown
+RUN rustup target add wasm32-unknown-unknown && \
+    rustup install nightly && \
+    cargo install cargo-udeps --locked 
+
 RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
 # コンテナ内の作業ユーザーを設定

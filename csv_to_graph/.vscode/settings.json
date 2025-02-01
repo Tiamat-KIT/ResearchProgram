@@ -1,6 +1,5 @@
 {
     "debug.javascript.defaultRuntimeExecutable": {
         "pwa-node": "c:\\users\\taito\\appdata\\local\\mise\\shims\\node"
-    },
-    "rust-analyzer.cargo.target": "wasm32-unknown-unknown"
+    }
 }

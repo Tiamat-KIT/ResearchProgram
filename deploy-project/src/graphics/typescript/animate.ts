@@ -46,6 +46,7 @@ class FrameStats {
         }
         this.totalTime += frameTime;
         this.frameCount += 1;
+        
     }
 
     averageTime() {
@@ -79,6 +80,45 @@ export default async function complete() {
     const frameStats = new FrameStats();
     // 星の数を定義
     const NUM_STARS = 1000;
+
+    // フレームタイムをCSVとして保存する関数
+    function saveFrameTimesAsCSV() {
+        // CSVフォーマットに変換
+        const csvContent = "data:text/csv;charset=utf-8," + frameTimes.map(time => time.toFixed(6)).join("\n");
+        
+        // CSVのデータをエンコードして、ダウンロードリンクを作成
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "frame_times.csv");
+        
+        // ボタンクリックでダウンロードをトリガー
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // localStorageからデータを保存するボタンを作成する関数
+    function createSaveButton() {
+        const saveButton = document.createElement("button");
+        saveButton.textContent = "フレームタイムを保存 (CSV)";
+        saveButton.onclick = saveFrameTimesAsCSV; // CSVとして保存する関数を呼び出し
+        document.body.appendChild(saveButton);
+    }
+
+    // localStorageからデータを削除するボタンを作成する関数
+    function createDeleteButton() {
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "フレームタイムを削除";
+        deleteButton.onclick = () => {
+            localStorage.removeItem("ts_frame_times");
+            alert("フレームタイムのデータが削除されました。");
+        };
+        document.body.appendChild(deleteButton);
+    }
+
+    // ボタン作成
+    createSaveButton();
 
     // 星のインスタンスデータを生成
     function createStarInstances() {
@@ -194,7 +234,7 @@ export default async function complete() {
     }
     `;
 
-    // パイプラインの設定
+    // パイプラインの設定 (以前のコード)
     const pipeline = device.createRenderPipeline({
         layout: 'auto',
         vertex: {
@@ -254,7 +294,7 @@ export default async function complete() {
         }
     });
 
-    // 頂点データとインデックスデータの作成
+    // 頂点データとインデックスデータの作成 (以前のコード)
     const starData = createStarVertices();
     const vertexBuffer = device.createBuffer({
         size: starData.vertices.byteLength,
@@ -268,7 +308,7 @@ export default async function complete() {
     });
     device.queue.writeBuffer(indexBuffer, 0, starData.indices);
 
-    // インスタンスデータの作成
+    // インスタンスデータの作成 (以前のコード)
     const instanceData = createStarInstances();
     const instanceBuffer = device.createBuffer({
         size: instanceData.byteLength,
@@ -276,7 +316,7 @@ export default async function complete() {
     });
     device.queue.writeBuffer(instanceBuffer, 0, instanceData);
 
-    // Uniform バッファの作成
+    // Uniform バッファの作成 (以前のコード)
     const uniformBuffer = device.createBuffer({
         size: 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -293,26 +333,14 @@ export default async function complete() {
     // 開始時間の記録
     const startTime = performance.now();
 
-    const frameTimes:Array<number> = [];
+    const frameTimes: Array<number> = [];
     const MAX_RECORDS = 1000;
 
     function saveToLocalStorage() {
-        localStorage.setItem("frameTimes", JSON.stringify(frameTimes));
-    }
-
-    function saveFrameTimesAsCSV() {
-        const csvContent = "data:text/csv;charset=utf-8," + frameTimes.join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "frame_times.csv");
-        document.body.appendChild(link);
-        link.click();
+        localStorage.setItem("ts_frame_times", JSON.stringify(frameTimes));
     }
 
     function render() {
-        if (frameTimes.length >= MAX_RECORDS) return;
-
         const renderBeforeTime = performance.now();
         const time = (performance.now() - startTime) / 1000;
         device.queue.writeBuffer(uniformBuffer, 0, new Float32Array([time]));
@@ -339,24 +367,19 @@ export default async function complete() {
 
         const renderAfterTime = performance.now();
         const renderTime = (renderAfterTime - renderBeforeTime) / 1000;
-        frameTimes.push(renderTime);
-        frameStats.update(renderTime);
+        
+        if (frameTimes.length < MAX_RECORDS) {
+            frameTimes.push(renderTime);
+            frameStats.update(renderTime);
+        }
 
-        if (frameStats.frameCount % 60 === 0) {
+        if (frameStats.frameCount % 60 === 0 && frameTimes.length < MAX_RECORDS) {
             frameStats.displayStats();
-            saveToLocalStorage(); // LocalStorage に保存
+            saveToLocalStorage();
         }
 
         requestAnimationFrame(render);
     }
 
-    // データをダウンロードするボタンを追加
-    const saveButton = document.createElement("button");
-    saveButton.textContent = "保存 (CSV)";
-    saveButton.onclick = saveFrameTimesAsCSV;
-    document.body.appendChild(saveButton);
-
     render();
-
-
 }
