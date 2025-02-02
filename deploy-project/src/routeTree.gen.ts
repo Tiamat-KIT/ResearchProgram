@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as WasmGpuImport } from './routes/wasm-gpu'
 import { Route as TsGpuImport } from './routes/ts-gpu'
+import { Route as TsGlImport } from './routes/ts-gl'
 
 // Create Virtual Routes
 
@@ -34,6 +35,12 @@ const TsGpuRoute = TsGpuImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const TsGlRoute = TsGlImport.update({
+  id: '/ts-gl',
+  path: '/ts-gl',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
   path: '/',
@@ -49,6 +56,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/ts-gl': {
+      id: '/ts-gl'
+      path: '/ts-gl'
+      fullPath: '/ts-gl'
+      preLoaderRoute: typeof TsGlImport
       parentRoute: typeof rootRoute
     }
     '/ts-gpu': {
@@ -72,12 +86,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/ts-gl': typeof TsGlRoute
   '/ts-gpu': typeof TsGpuRoute
   '/wasm-gpu': typeof WasmGpuRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/ts-gl': typeof TsGlRoute
   '/ts-gpu': typeof TsGpuRoute
   '/wasm-gpu': typeof WasmGpuRoute
 }
@@ -85,27 +101,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/ts-gl': typeof TsGlRoute
   '/ts-gpu': typeof TsGpuRoute
   '/wasm-gpu': typeof WasmGpuRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ts-gpu' | '/wasm-gpu'
+  fullPaths: '/' | '/ts-gl' | '/ts-gpu' | '/wasm-gpu'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ts-gpu' | '/wasm-gpu'
-  id: '__root__' | '/' | '/ts-gpu' | '/wasm-gpu'
+  to: '/' | '/ts-gl' | '/ts-gpu' | '/wasm-gpu'
+  id: '__root__' | '/' | '/ts-gl' | '/ts-gpu' | '/wasm-gpu'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  TsGlRoute: typeof TsGlRoute
   TsGpuRoute: typeof TsGpuRoute
   WasmGpuRoute: typeof WasmGpuRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  TsGlRoute: TsGlRoute,
   TsGpuRoute: TsGpuRoute,
   WasmGpuRoute: WasmGpuRoute,
 }
@@ -121,12 +140,16 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/ts-gl",
         "/ts-gpu",
         "/wasm-gpu"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/ts-gl": {
+      "filePath": "ts-gl.tsx"
     },
     "/ts-gpu": {
       "filePath": "ts-gpu.tsx"
