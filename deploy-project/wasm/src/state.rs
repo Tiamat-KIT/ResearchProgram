@@ -10,26 +10,40 @@ use web_time::Instant;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
+
 use crate::env;
 
-struct FrameStats {
+
+
+#[wasm_bindgen]
+pub struct FrameStats {
     min_time: f64,
     max_time: f64,
     total_time: f64,
     frame_count: u64,
+    frame_times: Vec<f64>
 }
 
+#[wasm_bindgen]
 impl FrameStats {
-    fn new() -> Self {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        
         Self {
             min_time: f64::MAX,
             max_time: 0.0,
             total_time: 0.0,
             frame_count: 0,
+            frame_times: Vec::new(),
         }
     }
 
-    fn update(&mut self, frame_time: f64) {
+    pub fn update(&mut self, frame_time: f64) {
         if frame_time < self.min_time {
             self.min_time = frame_time;
         }
@@ -38,13 +52,16 @@ impl FrameStats {
         }
         self.total_time += frame_time;
         self.frame_count += 1;
+        self.frame_times.push(frame_time);
+
+        self.save_frame_times_to_local_storage(); 
     }
 
-    fn average_time(&self) -> f64 {
+    pub fn average_time(&self) -> f64 {
         if self.frame_count == 0 {
             0.0
         } else {
-            (self.total_time / self.frame_count as f64).powi(7).trunc()
+            self.total_time / self.frame_count as f64
         }
     }
 
@@ -82,6 +99,36 @@ impl FrameStats {
             }
         }
     }
+
+    fn save_frame_times_to_local_storage(&self){
+        if let Some(window) = window() {
+            if let Some(storage) = window.local_storage().ok().flatten() {
+                // `frame_times`キーでフレーム時間のリストを保存
+                let key = "wasm_frame_times";
+                let serialized = serde_json::to_string(&self.frame_times).unwrap();
+                let _ = storage.set_item(key, &serialized);
+            }
+        }
+    }
+
+    pub fn get_saved_frame_times(&self) -> Vec<f64> {
+        // ローカルストレージから保存されたフレーム時間を取得
+        if let Some(window) = window() {
+            if let Some(storage) = window.local_storage().ok().flatten() {
+                match storage.get_item("wasm_frame_times") {
+                    Ok(Some(times)) => match serde_json::from_str::<Vec<f64>>(&times) {
+                        Ok(times_vec) => times_vec,
+                        Err(_) => vec![],
+                    },
+                    _ => vec![],
+                }
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        }
+    }
 }
 
 pub struct WgpuState {
@@ -107,7 +154,7 @@ pub struct WgpuState {
 impl WgpuState {
     pub async fn new(window: Window) -> WgpuState {
         let size = window.inner_size();
-        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             #[cfg(target_arch = "wasm32")]
             backends: wgpu::Backends::SECONDARY,
             #[cfg(not(target_arch = "wasm32"))]
@@ -200,7 +247,6 @@ impl WgpuState {
         let instances = crate::instance::create_star_instances();
         let instance_buffer = crate::instance::get_instance_buffer(&device, &instances);
         let mut stats = FrameStats::new();
-
         Self {
             instance,
             surface,
@@ -264,7 +310,7 @@ impl WgpuState {
         let render_before_time = Instant::now();
         let output = self.surface.get_current_texture().unwrap();
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
+    
         let now = Instant::now();
         let time = now.duration_since(self.start_time.clone().unwrap()).as_secs_f32();
         if let (
@@ -290,7 +336,7 @@ impl WgpuState {
         ) {
             queue.write_buffer(uniform_buffer, 0, bytemuck::cast_slice(&[crate::uniform::Uniforms::new(time)]));
             let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
+    
             {
                 let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
@@ -306,7 +352,7 @@ impl WgpuState {
                     timestamp_writes: None,
                     occlusion_query_set: None,
                 });
-
+    
                 render_pass.set_pipeline(render_pipeline);
                 render_pass.set_bind_group(0, uniform_bind_group, &[]);
                 render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
@@ -316,7 +362,7 @@ impl WgpuState {
             }
             queue.submit(std::iter::once(encoder.finish()));
         }
-
+    
         output.present();
         let render_after_time = Instant::now();
         let render_time = render_after_time.duration_since(render_before_time).as_secs_f64();
@@ -326,4 +372,5 @@ impl WgpuState {
         }
         Ok(())
     }
+    
 }

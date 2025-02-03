@@ -10,6 +10,7 @@ function App() {
       <section>
         <Link to="/ts-gpu">従来法</Link>
         <Link to="/wasm-gpu">提案法</Link>
+        <Link to="/ts-gl">従来法（WebGL）</Link>
       </section>
     </main>
   )
