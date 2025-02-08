@@ -75,23 +75,6 @@ class FrameStats {
             `;
         }
     }
-
-    downloadCSV(): void {
-        const csvContent = [
-            ...this.frameTimes.map((time) => `${time.toFixed(6)}`)
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'frame_times.csv';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-    }
 }
 
 function initWebGL(canvas: HTMLCanvasElement): WebGLContext | null {
@@ -261,11 +244,6 @@ export default function initializeRenderer(canvas: HTMLCanvasElement): void {
 
     // Set clear color
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-    // Setup download button
-    document.getElementById('download-btn')?.addEventListener('click', () => {
-        stats.downloadCSV();
-    });
 
     // Animation function
     function render(currentTime: number): void {

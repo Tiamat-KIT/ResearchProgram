@@ -21,7 +21,6 @@ export default function Gl_View() {
             <section>
                 <div id="stats-ts" />
                 <canvas id="glCanvas" />
-                <button id="download-btn">Save</button>
             </section>
         </main>
     );

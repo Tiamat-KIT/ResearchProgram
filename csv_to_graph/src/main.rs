@@ -24,13 +24,11 @@ fn file_to_values(filename: &str) -> Result<Vec<f64>, Box<dyn Error>> {
 fn get_minimum_values(filenames: &[&str]) -> Result<Vec<f64>, Box<dyn Error>> {
     let mut all_values: Vec<Vec<f64>> = Vec::new();
     
-    // 全てのファイルからデータを読み込む
     for &filename in filenames {
         let values = file_to_values(filename)?;
         all_values.push(values);
     }
     
-    // 各フレームでの最小値を計算
     let mut min_values = vec![0.0; 900];
     for frame in 0..900 {
         let min: f64 = all_values.iter()
@@ -43,7 +41,7 @@ fn get_minimum_values(filenames: &[&str]) -> Result<Vec<f64>, Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // 3種類の実装それぞれ3ファイルずつのパスを定義
+    let font = "MS Gothic";
     let wasm_files = [
         "wasm_frame_times_1.csv",
         "wasm_frame_times_2.csv",
@@ -60,13 +58,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         "gl_frame_times_3.csv"
     ];
     
-    // 各実装のデータの最小値を取得
     let values1 = get_minimum_values(&wasm_files)?;
     let values2 = get_minimum_values(&ts_files)?;
     let values3 = get_minimum_values(&webgl_files)?;
     
-    // グラフの描画
-    let root = BitMapBackend::new("plot_comparison.png", (800, 600))
+    let root = BitMapBackend::new("plot_comparison.png", (1200, 800))
         .into_drawing_area();
     root.fill(&WHITE)?;
     
@@ -83,45 +79,50 @@ fn main() -> Result<(), Box<dyn Error>> {
         .fold(f64::INFINITY, f64::min);
     
     let mut chart = ChartBuilder::on(&root)
-        .caption("Frame Processing Time Comparison \n(Using Three Types of Data and Taking the Minimum Value for Each Frame)", ("Arial", 16).into_font())
+        .caption(
+            "Frame Processing Time Comparison\n(Minimum values from three trials per implementation)",
+            (font, 25).into_font(),
+        )
         .margin(50)
-        .x_label_area_size(40)
-        .y_label_area_size(40)
+        .x_label_area_size(50)
+        .y_label_area_size(60)
         .build_cartesian_2d(0..max_x, min_y..max_y)?;
     
-    // メッシュ線を表示
     chart.configure_mesh()
-        .label_style(("Arial", 15))
+        .x_desc("Frame Number (count)")
+        .y_desc("Processing Time (seconds)")
+        .axis_desc_style((font, 20))
+        .label_style((font, 15))
+        .x_labels(15)
+        .y_labels(10)
+        .max_light_lines(4)
         .draw()?;
     
-    // WASM実装のデータを描画
     chart.draw_series(LineSeries::new(
         values1.iter().enumerate().map(|(i, &v)| (i, v)),
-        &RED,
-    ))?.label("WASM & WebGL")
-      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
-    
-    // TypeScript実装のデータを描画
+        RED.mix(0.8).stroke_width(3),
+    ))?.label("Proposed Method")
+      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED.mix(0.8).stroke_width(3)));
+
     chart.draw_series(LineSeries::new(
         values2.iter().enumerate().map(|(i, &v)| (i, v)),
-        &BLUE,
-    ))?.label("WebGPU")
-      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+        BLUE.mix(0.8).stroke_width(3),
+    ))?.label("Conventional Method 2")
+      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE.mix(0.8).stroke_width(3)));
     
-    // WebGL実装のデータを描画
     chart.draw_series(LineSeries::new(
         values3.iter().enumerate().map(|(i, &v)| (i, v)),
-        &GREEN,
-    ))?.label("WebGL")
-      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+        GREEN.mix(0.8).stroke_width(3),
+    ))?.label("Conventional Method 1")
+      .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], GREEN.mix(0.8).stroke_width(3)));
     
-    // 凡例を追加
     chart
         .configure_series_labels()
-        .background_style(&WHITE.mix(0.8))
+        .background_style(&WHITE.mix(0.9))
         .border_style(&BLACK)
-        .label_font(("Arial", 15))
-        .position(SeriesLabelPosition::UpperLeft)
+        .label_font((font, 20))
+        .position(SeriesLabelPosition::UpperRight)
+        .margin(15)
         .draw()?;
     
     root.present()?;
