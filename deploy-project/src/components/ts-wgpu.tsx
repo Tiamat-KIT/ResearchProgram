@@ -8,10 +8,6 @@ function Ts_View() {
         if(initialCheck) {
             complete();
         }   
-
-        return () => {
-            document.querySelector("#save-button")?.remove()
-        }
     }, [])
 
     return (

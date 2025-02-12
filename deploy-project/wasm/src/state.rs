@@ -52,9 +52,9 @@ impl FrameStats {
         }
         self.total_time += frame_time;
         self.frame_count += 1;
-        self.frame_times.push(frame_time);
+        // self.frame_times.push(frame_time);
 
-        self.save_frame_times_to_local_storage(); 
+        // self.save_frame_times_to_local_storage(); 
     }
 
     pub fn average_time(&self) -> f64 {
@@ -100,7 +100,7 @@ impl FrameStats {
         }
     }
 
-    fn save_frame_times_to_local_storage(&self){
+    /* fn save_frame_times_to_local_storage(&self){
         if let Some(window) = window() {
             if let Some(storage) = window.local_storage().ok().flatten() {
                 // `frame_times`キーでフレーム時間のリストを保存
@@ -128,7 +128,7 @@ impl FrameStats {
         } else {
             vec![]
         }
-    }
+    } */
 }
 
 pub struct WgpuState {

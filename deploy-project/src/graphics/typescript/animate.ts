@@ -81,45 +81,6 @@ export default async function complete() {
     // 星の数を定義
     const NUM_STARS = 1000;
 
-    // フレームタイムをCSVとして保存する関数
-    function saveFrameTimesAsCSV() {
-        // CSVフォーマットに変換
-        const csvContent = "data:text/csv;charset=utf-8," + frameTimes.map(time => time.toFixed(6)).join("\n");
-        
-        // CSVのデータをエンコードして、ダウンロードリンクを作成
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "frame_times.csv");
-        
-        // ボタンクリックでダウンロードをトリガー
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // localStorageからデータを保存するボタンを作成する関数
-    function createSaveButton() {
-        const saveButton = document.createElement("button");
-        saveButton.textContent = "フレームタイムを保存 (CSV)";
-        saveButton.onclick = saveFrameTimesAsCSV; // CSVとして保存する関数を呼び出し
-        document.body.appendChild(saveButton);
-    }
-
-    // localStorageからデータを削除するボタンを作成する関数
-    function createDeleteButton() {
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "フレームタイムを削除";
-        deleteButton.onclick = () => {
-            localStorage.removeItem("ts_frame_times");
-            alert("フレームタイムのデータが削除されました。");
-        };
-        document.body.appendChild(deleteButton);
-    }
-
-    // ボタン作成
-    createSaveButton();
-
     // 星のインスタンスデータを生成
     function createStarInstances() {
         const instances = [];

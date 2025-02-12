@@ -6,7 +6,6 @@ export class FrameStats {
   constructor();
   update(frame_time: number): void;
   average_time(): number;
-  get_saved_frame_times(): Float64Array;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -17,7 +16,6 @@ export interface InitOutput {
   readonly framestats_new: () => number;
   readonly framestats_update: (a: number, b: number) => void;
   readonly framestats_average_time: (a: number) => number;
-  readonly framestats_get_saved_frame_times: (a: number, b: number) => void;
   readonly run: () => void;
   readonly __wbindgen_export_0: () => number;
   readonly __wbindgen_export_1: WebAssembly.Table;
@@ -26,13 +24,12 @@ export interface InitOutput {
   readonly __wbindgen_export_4: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_5: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_6: WebAssembly.Table;
-  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-  readonly closure6_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure4_externref_shim: (a: number, b: number, c: any, d: any) => void;
-  readonly closure204_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure6_externref_shim: (a: number, b: number, c: any, d: any) => void;
+  readonly closure4_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure190_externref_shim: (a: number, b: number, c: any) => void;
   readonly __wbindgen_export_10: (a: number, b: number) => void;
-  readonly closure290_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure592_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure279_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure580_externref_shim: (a: number, b: number, c: any) => void;
   readonly __wbindgen_start: () => void;
 }
 
